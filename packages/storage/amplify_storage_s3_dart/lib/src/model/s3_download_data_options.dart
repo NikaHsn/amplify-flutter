@@ -21,6 +21,18 @@ class S3DownloadDataOptions extends StorageDownloadDataOptions {
           useAccelerateEndpoint: useAccelerateEndpoint,
         );
 
+  /// Creates [S3DownloadDataOptions] from [StorageDownloadDataOptions].
+  factory S3DownloadDataOptions.from(
+    StorageDownloadDataOptions? options,
+    StorageAccessLevel defaultAccessLevel,
+  ) {
+    return options != null && options is S3DownloadDataOptions
+        ? options
+        : S3DownloadDataOptions(
+            accessLevel: defaultAccessLevel,
+          );
+  }
+
   const S3DownloadDataOptions._({
     super.accessLevel = StorageAccessLevel.guest,
     this.getProperties = false,

@@ -14,6 +14,16 @@ class S3GetPropertiesOptions extends StorageGetPropertiesOptions {
           accessLevel: accessLevel,
         );
 
+  /// Creates [S3GetPropertiesOptions] from [StorageGetPropertiesOptions].
+  factory S3GetPropertiesOptions.from(
+    StorageGetPropertiesOptions? options,
+    StorageAccessLevel defaultAccessLevel,
+  ) {
+    return options != null && options is S3GetPropertiesOptions
+        ? options
+        : S3GetPropertiesOptions(accessLevel: defaultAccessLevel);
+  }
+
   const S3GetPropertiesOptions._({
     super.accessLevel = StorageAccessLevel.guest,
     this.targetIdentityId,

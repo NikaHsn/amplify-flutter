@@ -21,6 +21,16 @@ class S3GetUrlOptions extends StorageGetUrlOptions {
           useAccelerateEndpoint: useAccelerateEndpoint,
         );
 
+  /// Creates [S3GetUrlOptions] from [StorageGetUrlOptions].
+  factory S3GetUrlOptions.from(
+    StorageGetUrlOptions? options,
+    StorageAccessLevel defaultAccessLevel,
+  ) {
+    return options != null && options is S3GetUrlOptions
+        ? options
+        : S3GetUrlOptions(accessLevel: defaultAccessLevel);
+  }
+
   const S3GetUrlOptions._({
     super.accessLevel = StorageAccessLevel.guest,
     this.expiresIn = const Duration(days: 1),

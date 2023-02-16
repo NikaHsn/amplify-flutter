@@ -21,6 +21,18 @@ class S3Item extends StorageItem {
     this.contentType,
   });
 
+  /// Creates [S3Item] from [StorageItem].
+  factory S3Item.from(StorageItem storageItem) {
+    return storageItem is S3Item
+        ? storageItem
+        : S3Item(
+            key: storageItem.key,
+            size: storageItem.size,
+            lastModified: storageItem.lastModified,
+            eTag: storageItem.eTag,
+          );
+  }
+
   /// Creates a [S3Item] from [s3.S3Object] provided by S3 Client.
   @internal
   factory S3Item.fromS3Object(

@@ -41,29 +41,32 @@ abstract class StoragePluginInterface<
 
   /// {@macro amplify_core.amplify_storage_category.list}
   PluginStorageListOperation list({
-    required StorageListRequest<PluginStorageListOptions> request,
+    String? path,
+    PluginStorageListOptions? options,
   }) {
     throw UnimplementedError('list() has not been implemented.');
   }
 
   /// {@macro amplify_core.amplify_storage_category.get_properties}
   PluginStorageGetPropertiesOperation getProperties({
-    required StorageGetPropertiesRequest<StorageGetPropertiesOptions> request,
+    required String key,
+    PluginStorageGetPropertiesOptions? options,
   }) {
     throw UnimplementedError('getProperties() has not been implemented.');
   }
 
   /// {@macro amplify_core.amplify_storage_category.get_url}
   PluginStorageGetUrlOperation getUrl({
-    required StorageGetUrlRequest<PluginStorageGetUrlOptions> request,
+    required String key,
+    PluginStorageGetUrlOptions? options,
   }) {
     throw UnimplementedError('getUrl() has not been implemented.');
   }
 
   /// {@macro amplify_core.amplify_storage_category.download_data}
   PluginStorageDownloadDataOperation downloadData({
-    required StorageDownloadDataRequest<PluginStorageDownloadDataOptions>
-        request,
+    required String key,
+    PluginStorageDownloadDataOptions? options,
     void Function(PluginTransferProgress)? onProgress,
   }) {
     throw UnimplementedError('downloadData() has not been implemented.');
@@ -71,55 +74,63 @@ abstract class StoragePluginInterface<
 
   /// {@macro amplify_core.amplify_storage_category.download_file}
   PluginStorageDownloadFileOperation downloadFile({
-    required StorageDownloadFileRequest<PluginStorageDownloadFileOptions>
-        request,
+    required String key,
+    required AWSFile localFile,
     void Function(PluginTransferProgress)? onProgress,
+    PluginStorageDownloadFileOptions? options,
   }) {
     throw UnimplementedError('downloadFile() has not been implemented.');
   }
 
   /// {@macro amplify_core.amplify_storage_category.upload_data}
   PluginStorageUploadDataOperation uploadData({
-    required StorageUploadDataRequest<PluginStorageUploadDataOptions> request,
+    required String key,
+    required StorageDataPayload data,
     void Function(PluginTransferProgress)? onProgress,
+    PluginStorageUploadDataOptions? options,
   }) {
     throw UnimplementedError('uploadData() has not been implemented.');
   }
 
   /// {@macro amplify_core.amplify_storage_category.upload_file}
   PluginStorageUploadFileOperation uploadFile({
-    required StorageUploadFileRequest<PluginStorageUploadFileOptions> request,
+    required String key,
+    required AWSFile localFile,
     void Function(PluginTransferProgress)? onProgress,
+    PluginStorageUploadFileOptions? options,
   }) {
     throw UnimplementedError('uploadFile() has not been implemented.');
   }
 
   /// {@macro amplify_core.amplify_storage_category.copy}
   PluginStorageCopyOperation copy({
-    required StorageCopyRequest<PluginStorageItem, PluginStorageCopyOptions>
-        request,
+    required StorageItemWithAccessLevel<PluginStorageItem> source,
+    required StorageItemWithAccessLevel<PluginStorageItem> destination,
+    PluginStorageCopyOptions? options,
   }) {
     throw UnimplementedError('copy() has not been implemented.');
   }
 
   /// {@macro amplify_core.amplify_storage_category.move}
-  PluginStorageMoveOperation move({
-    required StorageMoveRequest<PluginStorageItem, PluginStorageMoveOptions>
-        request,
-  }) {
+  PluginStorageMoveOperation move(
+      {required StorageItemWithAccessLevel<PluginStorageItem> source,
+      required StorageItemWithAccessLevel<PluginStorageItem> destination,
+      PluginStorageMoveOptions? options}) {
     throw UnimplementedError('move() has not been implemented.');
   }
 
   /// {@macro amplify_core.amplify_storage_category.remove}
   PluginStorageRemoveOperation remove({
-    required StorageRemoveRequest<PluginStorageRemoveOptions> request,
+    required String key,
+    PluginStorageRemoveOptions? options,
   }) {
     throw UnimplementedError('remove() has not been implemented.');
   }
 
   /// {@macro amplify_core.amplify_storage_category.remove_many}
   PluginStorageRemoveManyOperation removeMany({
-    required StorageRemoveManyRequest<PluginStorageRemoveManyOptions> request,
+    required List<String> keys,
+    PluginStorageRemoveManyOptions? options,
   }) {
     throw UnimplementedError('removeMany() has not been implemented.');
   }

@@ -192,11 +192,10 @@ class StorageCategory<
     String? path,
     PluginStorageListOptions? options,
   }) {
-    final request = StorageListRequest(
+    return _plugin.list(
       path: path,
       options: options,
     );
-    return _plugin.list(request: request);
   }
 
   /// {@template amplify_core.amplify_storage_category.get_properties}
@@ -211,11 +210,10 @@ class StorageCategory<
     required String key,
     PluginStorageGetPropertiesOptions? options,
   }) {
-    final request = StorageGetPropertiesRequest(
+    return _plugin.getProperties(
       key: key,
       options: options,
     );
-    return _plugin.getProperties(request: request);
   }
 
   /// {@template amplify_core.amplify_storage_category.get_url}
@@ -229,11 +227,10 @@ class StorageCategory<
     required String key,
     PluginStorageGetUrlOptions? options,
   }) {
-    final request = StorageGetUrlRequest(
+    return _plugin.getUrl(
       key: key,
       options: options,
     );
-    return _plugin.getUrl(request: request);
   }
 
   /// {@template amplify_core.amplify_storage_category.download_data}
@@ -249,13 +246,10 @@ class StorageCategory<
     void Function(PluginTransferProgress)? onProgress,
     PluginStorageDownloadDataOptions? options,
   }) {
-    final request = StorageDownloadDataRequest(
-      key: key,
-      options: options,
-    );
     return _plugin.downloadData(
-      request: request,
+      key: key,
       onProgress: onProgress,
+      options: options,
     );
   }
 
@@ -270,14 +264,11 @@ class StorageCategory<
     void Function(PluginTransferProgress)? onProgress,
     PluginStorageDownloadFileOptions? options,
   }) {
-    final request = StorageDownloadFileRequest(
+    return _plugin.downloadFile(
       key: key,
       localFile: localFile,
-      options: options,
-    );
-    return _plugin.downloadFile(
-      request: request,
       onProgress: onProgress,
+      options: options,
     );
   }
 
@@ -294,14 +285,11 @@ class StorageCategory<
     void Function(PluginTransferProgress)? onProgress,
     PluginStorageUploadDataOptions? options,
   }) {
-    final request = StorageUploadDataRequest(
-      data: data,
-      key: key,
-      options: options,
-    );
     return _plugin.uploadData(
-      request: request,
+      key: key,
+      data: data,
       onProgress: onProgress,
+      options: options,
     );
   }
 
@@ -319,14 +307,11 @@ class StorageCategory<
     void Function(PluginTransferProgress)? onProgress,
     PluginStorageUploadFileOptions? options,
   }) {
-    final request = StorageUploadFileRequest(
-      localFile: localFile,
-      key: key,
-      options: options,
-    );
     return _plugin.uploadFile(
-      request: request,
+      key: key,
+      localFile: localFile,
       onProgress: onProgress,
+      options: options,
     );
   }
 
@@ -344,12 +329,11 @@ class StorageCategory<
     required StorageItemWithAccessLevel<PluginStorageItem> destination,
     PluginStorageCopyOptions? options,
   }) {
-    final request = StorageCopyRequest(
+    return _plugin.copy(
       source: source,
       destination: destination,
       options: options,
     );
-    return _plugin.copy(request: request);
   }
 
   /// {@template amplify_core.amplify_storage_category.move}
@@ -367,12 +351,11 @@ class StorageCategory<
     required StorageItemWithAccessLevel<PluginStorageItem> destination,
     PluginStorageMoveOptions? options,
   }) {
-    final request = StorageMoveRequest(
+    return _plugin.move(
       source: source,
       destination: destination,
       options: options,
     );
-    return _plugin.move(request: request);
   }
 
   /// {@template amplify_core.amplify_storage_category.remove}
@@ -383,11 +366,7 @@ class StorageCategory<
     required String key,
     PluginStorageRemoveOptions? options,
   }) {
-    final request = StorageRemoveRequest(
-      key: key,
-      options: options,
-    );
-    return _plugin.remove(request: request);
+    return _plugin.remove(key: key, options: options);
   }
 
   /// {@template amplify_core.amplify_storage_category.remove_many}
@@ -398,10 +377,9 @@ class StorageCategory<
     required List<String> keys,
     PluginStorageRemoveManyOptions? options,
   }) {
-    final request = StorageRemoveManyRequest(
+    return _plugin.removeMany(
       keys: keys,
       options: options,
     );
-    return _plugin.removeMany(request: request);
   }
 }

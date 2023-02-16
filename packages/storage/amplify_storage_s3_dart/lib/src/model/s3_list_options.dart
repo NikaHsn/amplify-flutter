@@ -20,6 +20,17 @@ class S3ListOptions extends StorageListOptions {
           excludeSubPaths: excludeSubPaths,
         );
 
+  /// Creates [S3ListOptions] from [StorageListOptions]
+  factory S3ListOptions.from({
+    StorageListOptions? options,
+    required StorageAccessLevel accessLevel,
+  }) {
+    return options != null && options is S3ListOptions
+        ? options
+        : S3ListOptions(
+            accessLevel: accessLevel,
+          );
+  }
   const S3ListOptions._({
     super.accessLevel = StorageAccessLevel.guest,
     super.pageSize = 1000,

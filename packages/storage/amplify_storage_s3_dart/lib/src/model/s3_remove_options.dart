@@ -12,4 +12,16 @@ class S3RemoveOptions extends StorageRemoveOptions {
   const S3RemoveOptions({
     super.accessLevel = StorageAccessLevel.guest,
   });
+
+  /// Creates [S3RemoveOptions] from [StorageRemoveOptions]
+  factory S3RemoveOptions.from(
+    StorageRemoveOptions? options,
+    StorageAccessLevel defaultAccessLevel,
+  ) {
+    return options != null && options is S3RemoveOptions
+        ? options
+        : S3RemoveOptions(
+            accessLevel: defaultAccessLevel,
+          );
+  }
 }

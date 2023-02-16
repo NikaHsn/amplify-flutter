@@ -16,6 +16,18 @@ class S3UploadFileOptions extends StorageUploadFileOptions {
     this.useAccelerateEndpoint = false,
   });
 
+  /// Creates [S3UploadFileOptions] from [StorageUploadFileOptions].
+  factory S3UploadFileOptions.from(
+    StorageUploadFileOptions? options,
+    StorageAccessLevel defaultAccessLevel,
+  ) {
+    return options != null && options is S3UploadFileOptions
+        ? options
+        : S3UploadFileOptions(
+            accessLevel: defaultAccessLevel,
+          );
+  }
+
   /// The metadata attached to the object to be uploaded.
   final Map<String, String>? metadata;
 

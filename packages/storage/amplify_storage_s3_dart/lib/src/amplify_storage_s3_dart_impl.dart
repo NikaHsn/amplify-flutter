@@ -185,79 +185,77 @@ class AmplifyStorageS3Dart extends StoragePluginInterface<
 
   @override
   S3ListOperation list({
-    required StorageListRequest request,
+    String? path,
+    StorageListOptions? options,
   }) {
-    final s3Options = request.options as S3ListOptions?;
+    final s3Options = S3ListOptions.from(
+      options: options,
+      accessLevel: s3pluginConfig.defaultAccessLevel,
+    );
 
     return S3ListOperation(
       request: StorageListRequest(
-        path: request.path,
+        path: path,
         options: s3Options,
       ),
       result: storageS3Service.list(
-        path: request.path,
-        options: s3Options ??
-            S3ListOptions(
-              accessLevel: s3pluginConfig.defaultAccessLevel,
-            ),
+        path: path,
+        options: s3Options,
       ),
     );
   }
 
   @override
   S3GetPropertiesOperation getProperties({
-    required StorageGetPropertiesRequest request,
+    required String key,
+    StorageGetPropertiesOptions? options,
   }) {
-    final s3Options = request.options as S3GetPropertiesOptions?;
+    final s3Options =
+        S3GetPropertiesOptions.from(options, s3pluginConfig.defaultAccessLevel);
 
     return S3GetPropertiesOperation(
       request: StorageGetPropertiesRequest(
-        key: request.key,
+        key: key,
         options: s3Options,
       ),
       result: storageS3Service.getProperties(
-        key: request.key,
-        options: s3Options ??
-            S3GetPropertiesOptions(
-              accessLevel: s3pluginConfig.defaultAccessLevel,
-            ),
+        key: key,
+        options: s3Options,
       ),
     );
   }
 
   @override
   S3GetUrlOperation getUrl({
-    required StorageGetUrlRequest request,
+    required String key,
+    StorageGetUrlOptions? options,
   }) {
-    final s3Options = request.options as S3GetUrlOptions?;
+    final s3Options =
+        S3GetUrlOptions.from(options, s3pluginConfig.defaultAccessLevel);
 
     return S3GetUrlOperation(
       request: StorageGetUrlRequest(
-        key: request.key,
+        key: key,
         options: s3Options,
       ),
       result: storageS3Service.getUrl(
-        key: request.key,
-        options: s3Options ??
-            S3GetUrlOptions(
-              accessLevel: s3pluginConfig.defaultAccessLevel,
-            ),
+        key: key,
+        options: s3Options,
       ),
     );
   }
 
   @override
   S3DownloadDataOperation downloadData({
-    required StorageDownloadDataRequest request,
+    required String key,
+    StorageDownloadDataOptions? options,
     void Function(S3TransferProgress)? onProgress,
   }) {
     final bytes = BytesBuilder();
-    final s3Options = request.options as S3DownloadDataOptions? ??
-        S3DownloadDataOptions(
-          accessLevel: s3pluginConfig.defaultAccessLevel,
-        );
+    final s3Options =
+        S3DownloadDataOptions.from(options, s3pluginConfig.defaultAccessLevel);
     final downloadTask = storageS3Service.downloadData(
-      key: request.key,
+      key: key,
       options: s3Options,
       onProgress: onProgress,
       onData: bytes.add,
@@ -265,7 +263,7 @@ class AmplifyStorageS3Dart extends StoragePluginInterface<
 
     return S3DownloadDataOperation(
       request: StorageDownloadDataRequest(
-        key: request.key,
+        key: key,
         options: s3Options,
       ),
       result: downloadTask.result.then(
@@ -282,9 +280,16 @@ class AmplifyStorageS3Dart extends StoragePluginInterface<
 
   @override
   S3DownloadFileOperation downloadFile({
-    required StorageDownloadFileRequest request,
+    required String key,
+    required AWSFile localFile,
     void Function(S3TransferProgress)? onProgress,
+    StorageDownloadFileOptions? options,
   }) {
+    final request = StorageDownloadFileRequest(
+      key: key,
+      localFile: localFile,
+      options: options,
+    );
     return download_file_impl.downloadFile(
       request: request,
       s3pluginConfig: s3pluginConfig,
@@ -296,25 +301,24 @@ class AmplifyStorageS3Dart extends StoragePluginInterface<
 
   @override
   S3UploadDataOperation uploadData({
-    required StorageUploadDataRequest request,
+    required StorageDataPayload data,
+    required String key,
     void Function(S3TransferProgress)? onProgress,
+    StorageUploadDataOptions? options,
   }) {
-    final s3Options = request.options as S3UploadDataOptions? ??
-        S3UploadDataOptions(
-          accessLevel: s3pluginConfig.defaultAccessLevel,
-        );
-
+    final s3Options =
+        S3UploadDataOptions.from(options, s3pluginConfig.defaultAccessLevel);
     final uploadTask = storageS3Service.uploadData(
-      key: request.key,
-      dataPayload: request.data,
+      key: key,
+      dataPayload: data,
       options: s3Options,
       onProgress: onProgress,
     );
 
     return S3UploadDataOperation(
       request: StorageUploadDataRequest(
-        data: request.data,
-        key: request.key,
+        data: data,
+        key: key,
         options: s3Options,
       ),
       result: uploadTask.result.then(
@@ -326,25 +330,25 @@ class AmplifyStorageS3Dart extends StoragePluginInterface<
 
   @override
   S3UploadFileOperation uploadFile({
-    required StorageUploadFileRequest request,
+    required AWSFile localFile,
+    required String key,
     void Function(S3TransferProgress)? onProgress,
+    StorageUploadFileOptions? options,
   }) {
-    final s3Options = request.options as S3UploadFileOptions? ??
-        S3UploadFileOptions(
-          accessLevel: s3pluginConfig.defaultAccessLevel,
-        );
+    final s3Options =
+        S3UploadFileOptions.from(options, s3pluginConfig.defaultAccessLevel);
 
     final uploadTask = storageS3Service.uploadFile(
-      key: request.key,
-      localFile: request.localFile,
+      key: key,
+      localFile: localFile,
       options: s3Options,
       onProgress: onProgress,
     );
 
     return S3UploadFileOperation(
       request: StorageUploadFileRequest(
-        localFile: request.localFile,
-        key: request.key,
+        localFile: localFile,
+        key: key,
         options: s3Options,
       ),
       result: uploadTask.result.then(
@@ -358,78 +362,88 @@ class AmplifyStorageS3Dart extends StoragePluginInterface<
 
   @override
   S3CopyOperation copy({
-    required StorageCopyRequest request,
+    required StorageItemWithAccessLevel<StorageItem> source,
+    required StorageItemWithAccessLevel<StorageItem> destination,
+    StorageCopyOptions? options,
   }) {
-    final source = request.source as S3ItemWithAccessLevel;
-    final destination = request.destination as S3ItemWithAccessLevel;
-    final s3Options = request.options as S3CopyOptions?;
+    final s3Source = S3ItemWithAccessLevel.from(source);
+    final s3Destination = S3ItemWithAccessLevel.from(destination);
+    final s3Options = S3CopyOptions.from(options);
 
     return S3CopyOperation(
-      request: StorageCopyRequest(source: source, destination: destination),
+      request: StorageCopyRequest(
+        source: s3Source,
+        destination: s3Destination,
+        options: s3Options,
+      ),
       result: storageS3Service.copy(
-        source: source,
-        destination: destination,
-        options: s3Options ?? const S3CopyOptions(),
+        source: s3Source,
+        destination: s3Destination,
+        options: s3Options,
       ),
     );
   }
 
   @override
   S3MoveOperation move({
-    required StorageMoveRequest request,
+    required StorageItemWithAccessLevel<StorageItem> source,
+    required StorageItemWithAccessLevel<StorageItem> destination,
+    StorageMoveOptions? options,
   }) {
-    final source = request.source as S3ItemWithAccessLevel;
-    final destination = request.destination as S3ItemWithAccessLevel;
-    final s3Options = request.options as S3MoveOptions?;
+    final s3Source = S3ItemWithAccessLevel.from(source);
+    final s3Destination = S3ItemWithAccessLevel.from(destination);
+    final s3Options = S3MoveOptions.from(options);
 
     return S3MoveOperation(
-      request: StorageMoveRequest(source: source, destination: destination),
+      request: StorageMoveRequest(
+        source: s3Source,
+        destination: s3Destination,
+        options: s3Options,
+      ),
       result: storageS3Service.move(
-        source: source,
-        destination: destination,
-        options: s3Options ?? const S3MoveOptions(),
+        source: s3Source,
+        destination: s3Destination,
+        options: s3Options,
       ),
     );
   }
 
   @override
   S3RemoveOperation remove({
-    required StorageRemoveRequest request,
+    required String key,
+    StorageRemoveOptions? options,
   }) {
-    final s3Options = request.options as S3RemoveOptions?;
+    final s3Options =
+        S3RemoveOptions.from(options, s3pluginConfig.defaultAccessLevel);
 
     return S3RemoveOperation(
       request: StorageRemoveRequest(
-        key: request.key,
+        key: key,
         options: s3Options,
       ),
       result: storageS3Service.remove(
-        key: request.key,
-        options: s3Options ??
-            S3RemoveOptions(
-              accessLevel: s3pluginConfig.defaultAccessLevel,
-            ),
+        key: key,
+        options: s3Options,
       ),
     );
   }
 
   @override
   S3RemoveManyOperation removeMany({
-    required StorageRemoveManyRequest request,
+    required List<String> keys,
+    StorageRemoveManyOptions? options,
   }) {
-    final s3Options = request.options as S3RemoveManyOptions?;
+    final s3Options =
+        S3RemoveManyOptions.from(options, s3pluginConfig.defaultAccessLevel);
 
     return S3RemoveManyOperation(
       request: StorageRemoveManyRequest(
-        keys: request.keys,
+        keys: keys,
         options: s3Options,
       ),
       result: storageS3Service.removeMany(
-        keys: request.keys,
-        options: s3Options ??
-            S3RemoveManyOptions(
-              accessLevel: s3pluginConfig.defaultAccessLevel,
-            ),
+        keys: keys,
+        options: s3Options,
       ),
     );
   }

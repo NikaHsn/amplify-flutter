@@ -12,6 +12,13 @@ class S3CopyOptions extends StorageCopyOptions {
     this.getProperties = false,
   });
 
+  /// Creates [S3CopyOptions] from [StorageCopyOptions].
+  factory S3CopyOptions.from(StorageCopyOptions? options) {
+    return options != null && options is S3CopyOptions
+        ? options
+        : const S3CopyOptions();
+  }
+
   /// Whether to retrieve properties for the copied object using the
   /// `getProperties` API.
   final bool getProperties;

@@ -13,6 +13,13 @@ class S3MoveOptions extends StorageMoveOptions {
     this.getProperties = false,
   });
 
+  /// Creates [S3MoveOptions] from [StorageMoveOptions].
+  factory S3MoveOptions.from(StorageMoveOptions? options) {
+    return options != null && options is S3MoveOptions
+        ? options
+        : const S3MoveOptions();
+  }
+
   /// Whether to retrieve properties for the moved object using the
   /// `getProperties` API.
   final bool getProperties;
