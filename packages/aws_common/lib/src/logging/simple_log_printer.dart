@@ -44,4 +44,10 @@ class SimpleLogPrinter implements AWSLoggerPlugin {
   void handleLogEntry(LogEntry logEntry) {
     safePrint(formatLogEntry(logEntry));
   }
+
+  @override
+  Object? get configuration {
+    // TODO: implement configFor
+    throw UnimplementedError();
+  }
 }

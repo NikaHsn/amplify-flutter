@@ -57,3 +57,81 @@ mixin AmplifyLoggerMixin on AWSDebuggable {
   @protected
   AmplifyLogger get logger => AmplifyLogger().createChild(runtimeTypeName);
 }
+
+// ignore: avoid_classes_with_only_static_members
+class AmplifyLoggingCloudWatch {
+  static CloudWatchLoggerPlugin? loggerPlugin;
+  static AmplifyLogger logger = AmplifyLogger();
+
+  static void configure(
+    LoggingConfig loggingConfig,
+    AmplifyAuthProviderRepository authProviderRepo,
+  ) {
+    if (loggerPlugin != null) {
+      return;
+    }
+    final credentialsProvider = authProviderRepo
+        .getAuthProvider(APIAuthorizationType.iam.authProviderToken)!;
+    //final identityProvider = authProviderRepo.getAuthProvider(APIAuthorizationType.userPools.authProviderToken);
+    final cloudWatchConfig = loggingConfig.cloudWatchConfig!;
+    RemoteLoggingConstraintsProvider? remoteProvider;
+    if (cloudWatchConfig.defaultRemoteConfiguration != null) {
+      final defaultConfig = cloudWatchConfig.defaultRemoteConfiguration!;
+      final remoteConfig = DefaultRemoteConfiguration(
+        defaultConfig.endpoint,
+        defaultConfig.refreshIntervalInSeconds,
+      );
+      remoteProvider = DefaultRemoteLoggingConstraintsProvider(
+        remoteConfig,
+        credentialsProvider,
+      );
+    }
+    final config = CloudWatchLoggerPluginConfiguration(
+      enable: cloudWatchConfig.enable,
+      cloudWatchConfig.logGroupName,
+      cloudWatchConfig.region,
+      cloudWatchConfig.cacheMaxSizeInMB,
+      cloudWatchConfig.flushIntervalInSeconds,
+      cloudWatchConfig.loggingConstraints,
+      remoteProvider,
+    );
+
+    loggerPlugin = CloudWatchLoggerPlugin(
+        pluginConfig: config, authProvider: credentialsProvider);
+    logger.registerPlugin(loggerPlugin!);
+  }
+}
+
+class LoggingConfig {
+  LoggingConfig({
+    this.cloudWatchConfig,
+    this.consoleConfig,
+  });
+  CloudWatchLoggingPlugin? cloudWatchConfig;
+  ConsoleLoggingPlugin? consoleConfig;
+}
+
+class ConsoleLoggingPlugin {
+  ConsoleLoggingPlugin({this.enable});
+  bool? enable;
+}
+
+class CloudWatchLoggingPlugin {
+  CloudWatchLoggingPlugin(
+    this.enable,
+    this.logGroupName,
+    this.region,
+    this.cacheMaxSizeInMB,
+    this.flushIntervalInSeconds,
+    this.defaultRemoteConfiguration,
+    this.loggingConstraints,
+  );
+
+  bool enable;
+  String logGroupName;
+  String region;
+  int cacheMaxSizeInMB;
+  Duration flushIntervalInSeconds;
+  DefaultRemoteConfiguration? defaultRemoteConfiguration;
+  CloudWatchLoggingConstraints loggingConstraints;
+}
