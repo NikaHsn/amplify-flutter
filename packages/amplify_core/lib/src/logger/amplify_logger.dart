@@ -78,8 +78,8 @@ class AmplifyLoggingCloudWatch {
     if (cloudWatchConfig.defaultRemoteConfiguration != null) {
       final defaultConfig = cloudWatchConfig.defaultRemoteConfiguration!;
       final remoteConfig = DefaultRemoteConfiguration(
-        defaultConfig.endpoint,
-        defaultConfig.refreshIntervalInSeconds,
+        endpoint: defaultConfig.endpoint,
+        refreshIntervalInSeconds: defaultConfig.refreshIntervalInSeconds,
       );
       remoteProvider = DefaultRemoteLoggingConstraintsProvider(
         remoteConfig,
@@ -88,16 +88,18 @@ class AmplifyLoggingCloudWatch {
     }
     final config = CloudWatchLoggerPluginConfiguration(
       enable: cloudWatchConfig.enable,
-      cloudWatchConfig.logGroupName,
-      cloudWatchConfig.region,
-      cloudWatchConfig.cacheMaxSizeInMB,
-      cloudWatchConfig.flushIntervalInSeconds,
-      cloudWatchConfig.loggingConstraints,
-      remoteProvider,
+      logGroupName: cloudWatchConfig.logGroupName,
+      region: cloudWatchConfig.region,
+      cacheMaxSizeInMB: cloudWatchConfig.cacheMaxSizeInMB,
+      flushIntervalInSeconds: cloudWatchConfig.flushIntervalInSeconds,
+      localLoggingConstraints: cloudWatchConfig.loggingConstraints,
     );
 
     loggerPlugin = CloudWatchLoggerPlugin(
-        pluginConfig: config, authProvider: credentialsProvider);
+      pluginConfig: config,
+      authProvider: credentialsProvider,
+      remoteLoggingConstraintsProvider: remoteProvider,
+    );
     logger.registerPlugin(loggerPlugin!);
   }
 }

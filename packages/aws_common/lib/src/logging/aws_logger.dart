@@ -102,19 +102,19 @@ class AWSLogger implements Closeable {
             as Plugin?;
   }
 
-  /// configures [AWSLoggerPlugin] for this logger instance.
-  void
-      configure<Config extends Object?, Plugin extends AWSLoggerPlugin<Config>>(
-    AWSLoggerPluginKey<Config, Plugin> pluginKey,
-    void Function(Config) fn,
-  ) {
-    final plugin = getPlugin<Plugin>();
-    if (plugin == null) {
-      throw StateError('No plugin registered for $pluginKey');
-    }
-    final config = plugin.configuration;
-    fn(config);
-  }
+  // /// configures [AWSLoggerPlugin] for this logger instance.
+  // void
+  //     configure<Config extends Object?, Plugin extends AWSLoggerPlugin<Config>>(
+  //   AWSLoggerPluginKey<Config, Plugin> pluginKey,
+  //   void Function(Config) fn,
+  // ) {
+  //   final plugin = getPlugin<Plugin>();
+  //   if (plugin == null) {
+  //     throw StateError('No plugin registered for $pluginKey');
+  //   }
+  //   final config = plugin.configuration;
+  //   fn(config);
+  // }
 
   /// Registers an [AWSLoggerPlugin] to handle logs emitted by this logger
   /// instance.
@@ -243,43 +243,43 @@ mixin AWSLoggerMixin on AWSDebuggable {
 /// A plugin to an [AWSLogger] which handles log entries emitted at the
 /// [LogLevel] of the logger instance.
 /// {@endtemplate}
-abstract class AWSLoggerPlugin<Configuration extends Object?> {
+abstract class AWSLoggerPlugin {
   /// {@macro aws_common.logging.aws_logger_plugin}
   const AWSLoggerPlugin();
 
   /// Handles a log entry emitted by the [AWSLogger].
   void handleLogEntry(LogEntry logEntry);
-
-  /// Configuration for [AWSLoggerPlugin].
-  Configuration get configuration;
-}
-
-///
-class AWSLoggerPluginKey<Config extends Object?,
-    Plugin extends AWSLoggerPlugin<Config>> {
-  ///
-  const AWSLoggerPluginKey();
 }
 
 /// An [AWSLoggerPlugin] for sending logs to AWS CloudWatch.
-class CloudWatchLoggerPlugin
-    extends AWSLoggerPlugin<CloudWatchLoggerPluginConfiguration> {
+class CloudWatchLoggerPlugin extends AWSLoggerPlugin {
   ///
   CloudWatchLoggerPlugin({
-    required CloudWatchLoggerPluginConfiguration pluginConfig,
     required AWSCredentialsProvider authProvider,
+    required CloudWatchLoggerPluginConfiguration pluginConfig,
+    RemoteLoggingConstraintsProvider? remoteLoggingConstraintsProvider,
   })  : _pluginConfig = pluginConfig,
-        _authProvider = authProvider;
+        _authProvider = authProvider,
+        _remoteLoggingConstraintsProvider = remoteLoggingConstraintsProvider;
 
   final CloudWatchLoggerPluginConfiguration _pluginConfig;
   final AWSCredentialsProvider _authProvider;
+  RemoteLoggingConstraintsProvider? _remoteLoggingConstraintsProvider;
 
-  static const CloudWatchLoggerPluginKey pluginKey =
-      CloudWatchLoggerPluginKey();
+  set remoteLoggingConstraintsProvider(
+    RemoteLoggingConstraintsProvider remoteProvider,
+  ) {
+    if (_remoteLoggingConstraintsProvider != null) {
+      throw StateError(
+        'remoteLoggingConstraintsProvider is already configured',
+      );
+    }
+    _remoteLoggingConstraintsProvider = remoteProvider;
+  }
 
-  @override
-  CloudWatchLoggerPluginConfiguration get configuration {
-    return _pluginConfig;
+  Future<CloudWatchLoggingConstraints> get _loggingConstraints async {
+    return await _remoteLoggingConstraintsProvider?.loggingConstraints ??
+        _pluginConfig.localLoggingConstraints;
   }
 
   @override
@@ -288,50 +288,34 @@ class CloudWatchLoggerPlugin
   }
 
   void flushLogs() {}
-}
 
-/// A plugin identifier which can be passed to [AWSLogger] `configure`
-/// method to retrieve a [CloudWatchLoggerPlugin] plugin wrapper.
-class CloudWatchLoggerPluginKey extends AWSLoggerPluginKey<
-    CloudWatchLoggerPluginConfiguration, CloudWatchLoggerPlugin> {
-  ///
-  const CloudWatchLoggerPluginKey();
+  void enable() {} // start sync
+
+  void disable() {} // clear local store and stop sync
 }
 
 ///
 class CloudWatchLoggerPluginConfiguration {
   ///
-  CloudWatchLoggerPluginConfiguration(
-    this.logGroupName,
-    this.region,
-    this.cacheMaxSizeInMB,
-    this.flushIntervalInSeconds,
-    this.localLoggingConstraints,
-    this.remoteLoggingConstraintsProvider, {
-    required bool enable,
-  }) : _enabled = enable;
+  CloudWatchLoggerPluginConfiguration({
+    required this.logGroupName,
+    required this.region,
+    required this.localLoggingConstraints,
+    this.enable = true,
+    this.cacheMaxSizeInMB = 5,
+    this.flushIntervalInSeconds = const Duration(seconds: 60),
+  });
 
-  bool _enabled;
-
+  final bool enable;
   final String logGroupName;
   final String region;
   final int cacheMaxSizeInMB;
   final Duration flushIntervalInSeconds;
   final CloudWatchLoggingConstraints localLoggingConstraints;
-  RemoteLoggingConstraintsProvider? remoteLoggingConstraintsProvider;
-
-  bool get enabled => _enabled;
-  CloudWatchLoggingConstraints get loggingConstraints {
-    return remoteLoggingConstraintsProvider?.loggingConstraints ??
-        localLoggingConstraints;
-  }
-
-  void enable() => _enabled = true;
-  void disable() => _enabled = false;
 }
 
 abstract class RemoteLoggingConstraintsProvider {
-  CloudWatchLoggingConstraints? get loggingConstraints;
+  Future<CloudWatchLoggingConstraints> get loggingConstraints;
 }
 
 ///
@@ -345,17 +329,17 @@ class DefaultRemoteLoggingConstraintsProvider
 
   final DefaultRemoteConfiguration config;
   final AWSCredentialsProvider authProviderRepo;
+
   @override
-  CloudWatchLoggingConstraints? get loggingConstraints {
-    CloudWatchLoggingConstraints();
-    return null;
-  }
+  // TODO: implement loggingConstraints
+  Future<CloudWatchLoggingConstraints> get loggingConstraints =>
+      throw UnimplementedError();
 }
 
 class CustomRemoteConfigProvider implements RemoteLoggingConstraintsProvider {
   @override
   // TODO: implement loggingConstraints
-  CloudWatchLoggingConstraints? get loggingConstraints =>
+  Future<CloudWatchLoggingConstraints> get loggingConstraints =>
       throw UnimplementedError();
 }
 
@@ -363,58 +347,83 @@ class CloudWatchLoggingConstraints {
   String? defaultLogLevel;
 }
 
+///
 class DefaultRemoteConfiguration {
-  DefaultRemoteConfiguration(this.endpoint, this.refreshIntervalInSeconds);
+  ///
+  DefaultRemoteConfiguration({
+    required this.endpoint,
+    this.refreshIntervalInSeconds = const Duration(seconds: 1200),
+  });
+
+  ///
   String endpoint;
+
+  ///
   Duration refreshIntervalInSeconds;
 }
 
 void test() {
+  // UC: enable and disable
+  AWSLogger().getPlugin<CloudWatchLoggerPlugin>()?.enable();
+  AWSLogger().getPlugin<CloudWatchLoggerPlugin>()?.disable();
+
+  // UC: use different credential provider with default remote config provider
   const authProviderRepo = AWSCredentialsProvider(
     AWSCredentials('accessKeyId', 'secretAccessKey'),
   );
 
   final remoteConfigProvider = DefaultRemoteLoggingConstraintsProvider(
-    DefaultRemoteConfiguration('endpoint', Duration.zero),
+    DefaultRemoteConfiguration(endpoint: 'endpoint'),
     authProviderRepo,
   );
 
+  AWSLogger()
+      .getPlugin<CloudWatchLoggerPlugin>()
+      ?.remoteLoggingConstraintsProvider = remoteConfigProvider;
+
+  /// UC: use custome remote provider
+  final customConfigProvider = CustomRemoteConfigProvider();
+  AWSLogger()
+      .getPlugin<CloudWatchLoggerPlugin>()
+      ?.remoteLoggingConstraintsProvider = customConfigProvider;
+
+  ///
   final pluginConfig = CloudWatchLoggerPluginConfiguration(
     enable: true,
-    'logGroupName',
-    'region',
-    5,
-    const Duration(minutes: 20),
-    CloudWatchLoggingConstraints(),
-    remoteConfigProvider,
+    logGroupName: 'logGroupName',
+    region: 'region',
+    localLoggingConstraints: CloudWatchLoggingConstraints(),
   );
 
   final loggerPlugin = CloudWatchLoggerPlugin(
     pluginConfig: pluginConfig,
     authProvider: authProviderRepo,
+    remoteLoggingConstraintsProvider: remoteConfigProvider,
   );
   final logger = AWSLogger()..registerPlugin(loggerPlugin);
   print('');
   logger.warn('some warn message');
   print('');
-  logger.configure(CloudWatchLoggerPlugin.pluginKey, (pluginConfig) {
-    pluginConfig.remoteLoggingConstraintsProvider =
-        DefaultRemoteLoggingConstraintsProvider(
-      DefaultRemoteConfiguration(
-        'endpoint',
-        const Duration(
-          minutes: 20,
-        ),
-      ),
-      authProviderRepo,
-    );
-  });
 
-  loggerPlugin.configuration.remoteLoggingConstraintsProvider =
+  loggerPlugin.remoteLoggingConstraintsProvider =
       DefaultRemoteLoggingConstraintsProvider(
     DefaultRemoteConfiguration(
-      'endpoint',
-      Duration.zero,
+      endpoint: 'endpoint',
+      refreshIntervalInSeconds: const Duration(
+        minutes: 20,
+      ),
+    ),
+    authProviderRepo,
+  );
+  print('object');
+
+  loggerPlugin.remoteLoggingConstraintsProvider =
+      DefaultRemoteLoggingConstraintsProvider(
+    DefaultRemoteConfiguration(
+      endpoint: 'endpoint',
+      refreshIntervalInSeconds: const Duration(
+        minutes: 20,
+      ),
     ),
     authProviderRepo,
   );
